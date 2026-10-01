@@ -1,0 +1,14 @@
+{
+  "name": "EMERGE YOU Programs",
+  "short_name": "EMERGE YOU",
+  "description": "Youth group sign-in kiosk and coach console",
+  "start_url": ".",
+  "scope": ".",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#0F130F",
+  "theme_color": "#0F130F",
+  "icons": [
+    { "src": "assets/img/emerge-you-icon.png", "sizes": "512x231", "type": "image/png", "purpose": "any" }
+  ]
+}

@@ -1,0 +1,782 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="EMERGE YOU">
+<meta name="theme-color" content="#0F130F">
+<link rel="icon" href="assets/img/emerge-you-icon.png">
+<link rel="apple-touch-icon" href="assets/img/emerge-you-icon.png">
+<link rel="manifest" href="assets/manifest.webmanifest">
+<title>Group Sign-In — Kiosk &amp; Staff Console</title>
+<link rel="stylesheet" href="assets/css/kiosk.css">
+</head>
+<body data-mode="kiosk">
+<!-- ============================================================
+     KIOSK  (public terminal)
+     ============================================================ -->
+<div class="kiosk" id="kiosk">
+
+  <header class="topbar">
+    <div class="brand">
+      <span class="logo-slot" id="logoSlot">
+      <svg class="logo" id="logoSvg" viewBox="0 0 48 48" aria-hidden="true">
+        <rect x="3" y="11" width="42" height="28" rx="3" fill="none" stroke="#F4EEE1" stroke-width="2.6"/>
+        <path d="M3 19h42" stroke="#F4EEE1" stroke-width="2.2"/>
+        <circle cx="24" cy="30" r="6.5" fill="none" stroke="#E8552F" stroke-width="2.6"/>
+        <path d="M24 30v-4M24 30l3 2" stroke="#E8552F" stroke-width="2.2" stroke-linecap="round"/>
+        <circle cx="9.5" cy="15" r="1.7" fill="#E8552F"/>
+      </svg>
+      <img id="logoImg" alt="Program logo" class="hidden">
+      </span>
+      <div class="bname" id="brandText">
+        <b id="orgNameOut">EMERGE YOU Programs</b>
+        <span>Group sign-in terminal</span>
+      </div>
+    </div>
+    <div class="clock">
+<div>
+        <div class="t mono" id="clockTime">--:--</div>
+        <div class="d" id="clockDate">&nbsp;</div>
+      </div>
+      <div class="ask-sub mono" id="kioskId" style="margin:0;font-size:.62rem;letter-spacing:.16em">KIOSK 01</div>
+    </div>
+  </header>
+
+  <main class="stage">
+
+    <!-- ---------- STEP 1: name ---------- -->
+    <section id="stepName">
+      <div class="step-eyebrow">
+        <span class="dot"></span>
+        <span class="eyebrow" id="stepLabel">Step 1 of 3 — your name</span>
+      </div>
+      <h1 class="ask">What's your name?</h1>
+      <p class="ask-sub">Start typing. Tap your name when it appears, then pick the group you're here for.</p>
+
+      <div class="field">
+        <label class="sr" for="nameInput">Your name</label>
+        <input id="nameInput" class="name-input" type="text" autocomplete="off" autocapitalize="words"
+               spellcheck="false" placeholder="Type your first name…" aria-describedby="nameHint nameStatus">
+        <p class="field-hint" id="nameHint">Keyboard: ↑ ↓ to choose · Enter to continue</p>
+      </div>
+
+      <div class="sug-wrap">
+        <div class="sug-list" id="sugList" role="listbox" aria-label="Matching names"></div>
+        <div id="nameStatus" class="sr" role="status" aria-live="polite"></div>
+        <div class="empty-note hidden" id="newNote">
+          No match. If you're new here, you can add yourself — a coach will confirm it later. Already on the program? A coach can add your name from the console.
+          <div class="ghost-row">
+            <button class="btn" id="addNewBtn" type="button">Add me as a new participant</button>
+          </div>
+        </div>
+      </div>
+
+      <p class="privacy">
+        <b>Privacy Notice.</b> This screen never shows who else has signed in today, and the list of
+        names clears itself if left alone. Only coaches can see the sign-in records.
+      </p>
+    </section>
+
+    <!-- ---------- STEP 2: group ---------- -->
+    <section id="stepGroup" class="hidden">
+      <div class="step-eyebrow">
+        <span class="dot"></span>
+        <span class="eyebrow">Step 2 of 3 — choose your group</span>
+      </div>
+      <h1 class="ask" id="greetName">Hi.</h1>
+      <p class="ask-sub">Which group are you attending right now? If you're staying for more than one, sign in again for each group.</p>
+
+      <div class="type-tabs" id="typeTabs" role="group" aria-label="Filter groups"></div>
+      <div class="group-grid" id="groupGrid"></div>
+
+      <div class="stage-actions">
+        <button class="btn" id="backToName" type="button">← Not me / start over</button>
+      </div>
+    </section>
+
+    <!-- ---------- STEP 3: coach question ---------- -->
+    <section id="stepCoachAsk" class="hidden">
+      <div class="step-eyebrow">
+        <span class="dot"></span>
+        <span class="eyebrow">Step 3 of 3 — one last thing</span>
+      </div>
+      <h1 class="ask">Need to see a coach?</h1>
+      <p class="ask-sub" id="askGroupLine">You picked a group.</p>
+      <div class="decision">
+        <button class="choice go" id="coachYes" type="button">
+          <span class="ico">Option 1</span>
+          <b>Request to see a coach</b>
+          <span>A coach gets told you're here and will come find you. Nobody at this screen can see that you asked, and you can still sign in for your group.</span>
+        </button>
+        <button class="choice quiet" id="coachNo" type="button">
+          <span class="ico">Option 2</span>
+          <b>No, I'm all good</b>
+          <span>Go straight to your sign-in card and punch in for your group.</span>
+        </button>
+      </div>
+      <div class="ask-on hidden" id="askOn" style="margin-top:1.1rem">
+        <span class="dot" style="background:var(--go)"></span><span id="askOnText">Coach requested</span>
+      </div>
+      <div class="stage-actions">
+        <button class="btn" data-restart type="button">← Start over</button>
+      </div>
+    </section>
+
+    <!-- ---------- NEW PARTICIPANT: interested in enrolling? ---------- -->
+    <section id="stepEnroll" class="hidden">
+      <div class="step-eyebrow">
+        <span class="dot"></span>
+        <span class="eyebrow">New here — welcome</span>
+      </div>
+      <h1 class="ask" id="enrollHello">You're new here.</h1>
+      <p class="ask-sub">We added your name so today's group is recorded. One quick question so we can help you properly.</p>
+      <h2 class="ask" style="font-size:clamp(1.35rem,3.6vw,2.2rem)">Are you interested in enrolling?</h2>
+      <p class="ask-sub">Enrolling means joining the program — a coach works with you on groups, work readiness and support.</p>
+      <div class="decision">
+        <button class="choice go" id="enrollYes" type="button">
+          <span class="ico">Yes</span>
+          <b>Yes, I'm interested</b>
+          <span>We'll show you the enrollment form to fill in on your phone.</span>
+        </button>
+        <button class="choice quiet" id="enrollNo" type="button">
+          <span class="ico">No</span>
+          <b>No, not right now</b>
+          <span>That's okay — you can still ask to see a coach.</span>
+        </button>
+      </div>
+      <div class="stage-actions">
+        <button class="btn" data-restart type="button">← Start over</button>
+      </div>
+    </section>
+
+    <!-- ---------- NEW PARTICIPANT: working phone? ---------- -->
+    <section id="stepPhone" class="hidden">
+      <div class="step-eyebrow">
+        <span class="dot"></span>
+        <span class="eyebrow">Enrollment — question 1 of 2</span>
+      </div>
+      <h1 class="ask">Do you have a working phone?</h1>
+      <p class="ask-sub">The enrollment form is completed on your own phone, so we need to know what works for you.</p>
+      <div class="decision">
+        <button class="choice go" id="phoneYes" type="button">
+          <span class="ico">Yes</span>
+          <b>Yes, I have a phone</b>
+          <span>Scan the code on the next screen and complete the form now.</span>
+        </button>
+        <button class="choice punchy" id="phoneNo" type="button">
+          <span class="ico">No</span>
+          <b>No phone right now</b>
+          <span>A coach can help you enroll in person instead.</span>
+        </button>
+      </div>
+      <div class="stage-actions">
+        <button class="btn" data-restart type="button">← Start over</button>
+      </div>
+    </section>
+
+    <!-- ---------- NEW PARTICIPANT: enrollment QR ---------- -->
+    <section id="stepQr" class="hidden">
+      <div class="step-eyebrow">
+        <span class="dot"></span>
+        <span class="eyebrow">Enrollment — question 2 of 2</span>
+      </div>
+      <h1 class="ask">Scan to enroll</h1>
+      <p class="ask-sub">Point your phone camera at the code and the enrollment form opens. Take your time — nothing here is shared with anyone at this screen.</p>
+      <div class="qr-panel">
+        <div class="qr-card"><img id="qrImg" alt="QR code that opens the enrollment form"></div>
+        <div class="qr-copy">
+          <ol class="qr-steps">
+            <li>Open the camera on your phone.</li>
+            <li>Point it at the code on the left.</li>
+            <li>Tap the link that appears and fill in the form.</li>
+          </ol>
+          <span class="url" id="qrUrl"></span>
+          <button class="btn btn-go btn-big" id="qrDone" type="button">I've finished — continue</button>
+        </div>
+      </div>
+      <p class="ask-sub" style="margin-top:1.1rem">Can't scan it, or no phone with you? Ask a coach and they'll help you with the form. If the screen is left alone it returns to the start by itself — nothing is lost.</p>
+      <div class="stage-actions">
+        <button class="btn" data-restart type="button">← Start over</button>
+      </div>
+    </section>
+
+    <!-- ---------- STEP 4: punch card ---------- -->
+    <section id="stepCard" class="hidden">
+      <div class="step-eyebrow">
+        <span class="dot"></span>
+        <span class="eyebrow" id="cardEyebrow">Confirm your sign-in</span>
+      </div>
+
+      <div class="card-row">
+        <div>
+          <div class="punchcard entering" id="punchCard">
+            <div class="tear" aria-hidden="true"></div>
+            <div class="body">
+              <div class="pc-head">
+                <span class="ttl">Sign-in card</span>
+                <span class="no" id="cardNo">NO. 000000</span>
+              </div>
+              <div class="pc-punch" id="cardName">—</div>
+              <div class="pc-line"><span class="k">Group</span><span class="v" id="cardGroup">—</span></div>
+              <div class="pc-line"><span class="k">Date</span><span class="v" id="cardDate">—</span></div>
+              <div class="pc-line"><span class="k">Time</span><span class="v" id="cardTime">—</span></div>
+              <div class="hole-strip">
+                <div class="holes" id="cardHoles"></div>
+                <span class="lbl" id="cardHolesLbl">Your week</span>
+              </div>
+              <div class="hole-strip">
+                <span class="lbl" id="punchHint" style="margin:0">Punch in to record it</span>
+              </div>
+            </div>
+            <div class="stamp" id="cardStamp">Signed in<br>Recorded</div>
+          </div>
+
+          <div class="stage-actions">
+            <button class="btn btn-primary btn-big" id="punchBtn" type="button">Punch in</button>
+            <button class="btn" id="cardBack" type="button">← Change group</button>
+            <button class="link-ask" id="askCoachCard" type="button">Also request to see a coach</button>
+          </div>
+
+          <div class="success" id="successPanel">
+            <h2 class="tick">Signed in.</h2>
+            <p id="successLine">You're on the list. A coach can see it — nobody else can.</p>
+            <p id="successRepeat" class="mono" style="font-size:.74rem;letter-spacing:.1em;color:var(--dim-2);margin-top:.5rem"></p>
+            <p class="ask-on hidden" id="successCoach" style="font-size:.78rem"><span class="dot" style="background:var(--go)"></span><span id="successCoachText"></span></p>
+            <div class="done-row">
+              <button class="btn-done" id="doneNow" type="button">Done</button>
+              <span class="done-note">The screen resets on its own</span>
+            </div>
+            <div class="countdown">
+              <span id="cdLabel">Returning to start in 10s</span>
+              <span class="cd-bar"><i id="cdBar"></i></span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <p class="idle-note hidden" id="idleNote"></p>
+  </main>
+
+  <footer class="bottombar">
+    <span id="kioskFoot">Group sign-in · records stay on this device until a coach exports them</span>
+    <button class="staffbtn" id="staffBtn" type="button">Staff console</button>
+  </footer>
+</div>
+
+<!-- ============================================================
+     PIN GATE
+     ============================================================ -->
+<div class="overlay" id="pinOverlay" role="dialog" aria-modal="true" aria-labelledby="pinTitle">
+  <div class="pinbox">
+    <span class="eyebrow">Staff only</span>
+    <h2 class="ttl" id="pinTitle">Enter coach PIN</h2>
+    <p class="sub" id="pinSub">4 digits</p>
+    <div class="pin-display" id="pinDisplay">
+      <i></i><i></i><i></i><i></i>
+    </div>
+    <div class="keypad" id="keypad"></div>
+    <p class="pin-msg" id="pinMsg"></p>
+    <button class="btn" id="pinCancel" type="button" style="margin-top:1.1rem">Cancel — back to sign-in</button>
+  </div>
+</div>
+
+<!-- ============================================================
+     COACH CONSOLE (private)
+     ============================================================ -->
+<div class="coach hidden" id="coach">
+  <nav class="rail">
+    <div class="rtitle">Coach console<span id="railOrg">EMERGE YOU Programs</span></div>
+    <button class="rail-kiosk" id="railKioskBtn" type="button">▶ Open kiosk view</button>
+    <button class="navbtn" data-view="roster" type="button">Roster <span class="ct" id="ctRoster">0</span></button>
+    <button class="navbtn" data-view="groups" type="button">Groups <span class="ct" id="ctGroups">0</span></button>
+    <button class="navbtn" data-view="requests" type="button">Coach requests <span class="ct" id="ctRequests">0</span></button>
+    <button class="navbtn" data-view="records" type="button">Sign-ins <span class="ct" id="ctRecords">0</span></button>
+    <button class="navbtn" data-view="export" type="button">Export week</button>
+    <button class="navbtn" data-view="alerts" type="button">Coach alerts <span class="ct" id="ctAlerts">0</span></button>
+    <button class="navbtn" data-view="settings" type="button">Settings</button>
+    <div class="rfoot" id="railFoot">—</div>
+  </nav>
+
+  <main class="board">
+
+    <!-- ---------- ROSTER ---------- -->
+    <section class="view" id="view-roster">
+      <div class="board-head">
+        <div>
+          <h1>Roster</h1>
+          <p>The names youth can pick from at the kiosk. Upload the program list, or paste names one per line.</p>
+        </div>
+        <div class="spacer"></div>
+      </div>
+
+      <div class="stat">
+        <div><b id="stTotal">0</b><span>Participants</span></div>
+        <div><b id="stToday">0</b><span>Sign-ins today</span></div>
+        <div><b id="stNew">0</b><span>Waiting on review</span></div>
+      </div>
+
+      <div class="grid2">
+        <div class="panel">
+          <h2>Add participants</h2>
+          <p class="hint">Paste one name per line, or drop a CSV / TXT / XLSX roster. Blank rows and duplicates are skipped automatically.</p>
+
+          <label class="f" for="pasteNames">Paste names</label>
+          <textarea class="f" id="pasteNames" placeholder="Jada Romero&#10;Jamal Whitfield&#10;Ana Delgado"></textarea>
+          <div class="row" style="margin-top:.7rem">
+            <button class="btn-c accent" id="addPasted" type="button">Add pasted names</button>
+            <button class="btn-c ghost" id="clearPaste" type="button">Clear box</button>
+          </div>
+
+          <label class="f">Or upload a file</label>
+          <div class="file-drop" id="rosterDrop">
+            <b>Drop roster file here</b>
+            <p class="hint" style="margin:.4rem 0 .7rem">CSV · TXT · XLSX (first sheet, or a column headed "name")</p>
+            <input type="file" id="rosterFile" accept=".csv,.txt,.tsv,.xlsx,.xlsm" class="hidden">
+            <button class="btn-c ghost" id="rosterFileBtn" type="button">Choose file</button>
+          </div>
+          <p class="hint" id="rosterUploadNote" style="margin-top:.8rem"></p>
+        </div>
+
+        <div class="panel">
+          <h2>Current roster</h2>
+          <p class="hint" id="rosterMeta">No roster uploaded yet.</p>
+          <div class="row" style="margin-bottom:.7rem">
+            <input class="f" id="rosterSearch" placeholder="Search names…" style="flex:1;min-width:160px">
+            <button class="btn-c ghost" id="mergeDupes" type="button">Merge duplicates</button>
+          </div>
+          <div class="scroll" style="max-height:360px">
+            <table class="tbl">
+              <thead><tr><th>Name</th><th>Short form</th><th>Sign-ins</th><th></th></tr></thead>
+              <tbody id="rosterBody"></tbody>
+            </table>
+          </div>
+          <p class="hint" id="rosterEmpty" style="margin-top:.8rem">Roster is empty — add names on the left, or load the sample roster in Settings.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ---------- GROUPS ---------- -->
+    <section class="view hidden" id="view-groups">
+      <div class="board-head">
+        <div>
+          <h1>Groups</h1>
+          <p>These become the Group Ref values on the export, matching the Group Definitions Reference sheet in your tracker.</p>
+        </div>
+        <div class="spacer"></div>
+        <button class="btn-c ghost" id="resetGroups" type="button">Restore default 13</button>
+      </div>
+      <div class="panel">
+        <div class="scroll" style="max-height:520px">
+          <table class="tbl">
+            <thead><tr><th>Group Ref</th><th>Full name</th><th>Description</th><th>Type</th><th></th></tr></thead>
+            <tbody id="groupsBody"></tbody>
+          </table>
+        </div>
+        <div class="row" style="margin-top:.9rem">
+          <button class="btn-c accent" id="addGroup" type="button">Add group</button>
+          <button class="btn-c ghost" id="saveGroups" type="button">Save group list</button>
+        </div>
+        <p class="hint" style="margin-top:.7rem">Type codes used at the kiosk: <b>YG</b> youth group · <b>WR</b> work readiness · <b>OT</b> other · <b>FBWH</b> Fellowship for Black Women Healers · <b>IND</b> individual.</p>
+      </div>
+    </section>
+
+    <!-- ---------- RECORDS ---------- -->
+    <section class="view hidden" id="view-records">
+      <div class="board-head">
+        <div>
+          <h1>Sign-in records</h1>
+          <p>Private. Never shown on the kiosk screen. Filter by day or group, fix a mistake, or add a row manually.</p>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="row">
+          <div><label class="f" for="recFrom">From</label><input type="date" class="f" id="recFrom"></div>
+          <div><label class="f" for="recTo">To</label><input type="date" class="f" id="recTo"></div>
+          <div><label class="f" for="recGroup">Group</label><select class="f" id="recGroup"></select></div>
+          <div><label class="f" for="recSearch">Name</label><input class="f" id="recSearch" placeholder="Search…"></div>
+          <div style="align-self:flex-end" class="row tight">
+            <button class="btn-c" id="recThisWeek" type="button">This week</button>
+            <button class="btn-c ghost" id="recAll" type="button">All</button>
+          </div>
+        </div>
+        <p class="hint" id="recSummary" style="margin:.9rem 0 .5rem"></p>
+        <div class="scroll" style="max-height:430px">
+          <table class="tbl">
+            <thead><tr><th>Date</th><th>Time</th><th>Name</th><th>Group Ref</th><th>Group</th><th>Source</th><th></th></tr></thead>
+            <tbody id="recBody"></tbody>
+          </table>
+        </div>
+
+        <h2 style="margin-top:1.4rem">Add a sign-in manually</h2>
+        <p class="hint">Use this for paper slips or when a youth attended but missed the kiosk. Same person can appear on multiple rows for the same day with different groups.</p>
+        <div class="row">
+          <div style="flex:1;min-width:180px"><label class="f" for="manName">Name</label><input class="f" id="manName" list="manNameList" placeholder="Start typing…"><datalist id="manNameList"></datalist></div>
+          <div style="flex:1;min-width:180px"><label class="f" for="manGroup">Group Ref</label><select class="f" id="manGroup"></select></div>
+          <div><label class="f" for="manDate">Date</label><input type="date" class="f" id="manDate"></div>
+          <div style="align-self:flex-end"><button class="btn-c accent" id="manAdd" type="button">Add row</button></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ---------- EXPORT ---------- -->
+    <section class="view hidden" id="view-export">
+      <div class="board-head">
+        <div>
+          <h1>Export week</h1>
+          <p>Builds the 3-week tracker from your sheet, plus a flat database-import sheet and the group reference.</p>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h2>Reporting window</h2>
+        <p class="hint">The week start auto-fills to the Sunday of the current week. Set it to any Sunday to export a different 3-week block. Dates land in the workbook as real dates, so you can still change them on the spreadsheet after export.</p>
+        <div class="row">
+          <div><label class="f" for="exWeekStart">Week start (Sunday)</label><input type="date" class="f" id="exWeekStart"></div>
+          <div style="align-self:flex-end" class="row tight">
+            <button class="btn-c ghost" id="exPrev3" type="button">← 3 weeks</button>
+            <button class="btn-c ghost" id="exThisWeek" type="button">This week</button>
+            <button class="btn-c ghost" id="exNext3" type="button">3 weeks →</button>
+          </div>
+          <div><label class="f" for="exScope">Records included</label>
+            <select class="f" id="exScope">
+              <option value="window">Only the 3-week window</option>
+              <option value="all">Every record on this device</option>
+            </select>
+          </div>
+        </div>
+        <p class="hint" id="exWindow" style="margin-top:.9rem"></p>
+        <div class="row" style="margin-top:.9rem">
+          <button class="btn-c accent" id="dlXlsx" type="button">Download workbook (.xlsx)</button>
+          <button class="btn-c" id="dlCsv" type="button">Download import rows (.csv)</button>
+          <button class="btn-c" id="dlReqCsv" type="button">Download coach requests (.csv)</button>
+          <button class="btn-c ghost" id="dlJson" type="button">Backup this kiosk (.json)</button>
+          <button class="btn-c ghost" id="importJsonBtn" type="button">Merge a kiosk backup…</button>
+          <input type="file" id="importJsonFile" accept=".json" class="hidden">
+        </div>
+      </div>
+
+      <div class="panel">
+        <h2>Workbook preview</h2>
+        <p class="hint" id="previewNote">Sheet 1 mirrors your Weekly Group Attendance Tracker. A 1 marks attendance; week totals are formulas.</p>
+        <div class="weekpreview" id="weekPreview"></div>
+      </div>
+
+      <div class="panel">
+        <h2>What's inside the workbook</h2>
+        <table class="tbl">
+          <thead><tr><th>Sheet</th><th>Purpose</th></tr></thead>
+          <tbody>
+            <tr><td class="nm">Group Activities</td><td>3-week tracker, one row per participant + Group Ref, attendance marks and week totals. Carries your uploaded logo in the header.</td></tr>
+            <tr><td class="nm">Database Import</td><td>Flat rows — name, group ref, group full name, type, date, day, week, time, source, then record type and the coach-request columns. Feed this straight to your database; one feed carries both sign-ins and coach requests.</td></tr>
+            <tr><td class="nm">Coach Requests</td><td>One row per coach request — date, time, name, reasons, urgency, note, group that day, status and who acknowledged it. Built for case management review.</td></tr>
+            <tr><td class="nm">Group Definitions Reference</td><td>The group code list, matching your existing reference sheet.</td></tr>
+            <tr><td class="nm">Roster</td><td>Every participant on the kiosk, with sign-in counts and last date seen.</td></tr>
+            <tr><td class="nm">Settings &amp; Summary</td><td>Week start, kiosk id, export date, and a per-group table: sign-ins, unique youth, days active and <b>coach requests per group</b> (total, still open, youth requesting) — the case-management check.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ---------- COACH REQUESTS ---------- -->
+    <section class="view hidden" id="view-requests">
+      <div class="board-head">
+        <div>
+          <h1>Coach requests</h1>
+          <p>Youth who asked to see a coach. Private — never shown on the kiosk screen. Mark one acknowledged once someone has been with them; that status travels into the export for case management.</p>
+        </div>
+        <div class="spacer"></div>
+        <button class="btn-c ghost" id="reqAckAll" type="button">Acknowledge all waiting</button>
+      </div>
+      <div class="stat">
+        <div><b id="rsTotal">0</b><span>In view</span></div>
+        <div><b id="rsOpen">0</b><span>Waiting</span></div>
+        <div><b id="rsUrgent">0</b><span>Marked urgent</span></div>
+      </div>
+      <div class="panel">
+        <div class="row">
+          <div><label class="f" for="reqFrom">From</label><input type="date" class="f" id="reqFrom"></div>
+          <div><label class="f" for="reqTo">To</label><input type="date" class="f" id="reqTo"></div>
+          <div><label class="f" for="reqStatus">Status</label><select class="f" id="reqStatus">
+            <option value="open">Waiting</option><option value="acknowledged">Acknowledged</option><option value="">All</option></select></div>
+          <div><label class="f" for="reqUrgency">Urgency</label><select class="f" id="reqUrgency">
+            <option value="">All</option><option value="now">Urgent</option><option value="soon">Routine</option></select></div>
+          <div><label class="f" for="reqSearchF">Name</label><input class="f" id="reqSearchF" placeholder="Search…"></div>
+          <div style="align-self:flex-end"><button class="btn-c ghost" id="reqResetF" type="button">Reset</button></div>
+        </div>
+        <p class="hint" id="reqSummary" style="margin:.9rem 0 .5rem"></p>
+        <div class="scroll" style="max-height:460px">
+          <table class="tbl">
+            <thead><tr><th>Date</th><th>Time</th><th>Name</th><th>Urgency</th><th>What they said</th><th>Note</th><th>Group that day</th><th>Status</th><th>Email</th><th></th></tr></thead>
+            <tbody id="reqBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ---------- COACH ALERTS ---------- -->
+    <section class="view hidden" id="view-alerts">
+      <div class="board-head">
+        <div>
+          <h1>Coach alerts</h1>
+          <p>Who gets emailed when a young person asks to see a coach, and how that email leaves this device.</p>
+        </div>
+      </div>
+
+      <div class="placeholder-warn hidden" id="coachPlaceholderWarn">
+        These are placeholder addresses. Replace them with real coach emails before this kiosk goes live — the export and the console view work either way, but no one will receive an alert.
+      </div>
+
+      <div class="panel">
+        <h2>Coach list</h2>
+          <p class="hint">Everyone marked <b>On alert</b> receives the request email. Untick someone to keep them in the list without emailing them.</p>
+          <div class="scroll" style="max-height:340px">
+            <table class="tbl cw">
+              <thead><tr><th>Name</th><th>Email</th><th>Role</th><th>On alert</th><th></th></tr></thead>
+              <tbody id="coachBody"></tbody>
+            </table>
+          </div>
+          <div class="row" style="margin-top:.9rem">
+            <button class="btn-c accent" id="addCoach" type="button">Add coach</button>
+            <button class="btn-c" id="saveCoaches" type="button">Save coach list</button>
+          </div>
+          <p class="hint" id="coachCount" style="margin-top:.7rem"></p>
+      </div>
+
+      <div class="grid2">
+        <div>
+          <div class="panel">
+            <h2>Email delivery</h2>
+            <p class="hint" id="mailModeNote"></p>
+            <label class="f" for="setMailMode">How requests are sent</label>
+            <select class="f" id="setMailMode"></select>
+            <div id="mailRelayFields">
+              <label class="f" for="setMailUrl">Relay URL</label>
+              <input class="f" id="setMailUrl" placeholder="https://script.google.com/macros/s/…/exec">
+              <label class="f" for="setMailCc">Always copy (optional)</label>
+              <input class="f" id="setMailCc" placeholder="casemanager@example.org">
+            </div>
+            <div class="row" style="margin-top:1rem">
+              <button class="btn-c accent" id="saveMail" type="button">Save delivery</button>
+              <button class="btn-c ghost" id="testMail" type="button">Send test alert</button>
+            </div>
+            <p class="hint" id="mailState" style="margin-top:.8rem"></p>
+          </div>
+
+          <div class="panel">
+            <h2>Mail relay — 2 minute setup</h2>
+            <p class="hint">A web page cannot send email by itself. Deploy this free relay once and every coach request leaves the kiosk silently, in the background. It needs no server and no cost.</p>
+            <ol class="howto">
+              <li>Open <b>script.google.com</b> and start a new project.</li>
+              <li>Delete the sample code and paste the script below.</li>
+              <li>Deploy → New deployment → type <b>Web app</b> → Execute as <b>me</b> → Who has access <b>Anyone</b>.</li>
+              <li>Copy the <b>/exec</b> URL, paste it into Relay URL above, then Save delivery.</li>
+              <li>Press <b>Send test alert</b> — every coach on alert should receive it.</li>
+            </ol>
+            <div class="row" style="margin:.6rem 0">
+              <button class="btn-c ghost" id="copySnippet" type="button">Copy the script</button>
+            </div>
+            <pre class="code" id="relaySnippet">// Coach-request mail relay for the group sign-in kiosk.
+// Paste into script.google.com, deploy as a Web app (access: Anyone),
+// then put the /exec URL into Coach alerts > Email delivery.
+function doPost(e) {
+  var d = JSON.parse(e.postData.contents);
+  var to = (d.to || []).join(',');
+  if (!to) { return ContentService.createTextOutput('no recipients'); }
+  MailApp.sendEmail({
+    to: to,
+    cc: d.cc || '',
+    subject: d.subject || 'Coach request',
+    body: d.body || ''
+  });
+  return ContentService.createTextOutput('sent to ' + to);
+}</pre>
+            <p class="hint">Treat that URL like a password: anyone holding it could send mail through your relay. If it leaks, delete the deployment and make a new one.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ---------- SETTINGS ---------- -->
+    <section class="view hidden" id="view-settings">
+      <div class="board-head">
+        <div>
+          <h1>Settings</h1>
+          <p>Kiosk identity, privacy behaviour and the coach PIN. Everything lives in this browser on this device.</p>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h2>Kiosk logo</h2>
+        <p class="hint">Upload your program's logo and it replaces the Emerge You logo in the kiosk header — and it is placed in the header of the exported workbook too, so the printed tracker is branded the same way. Wide wordmarks work; set the size so it fits. Anything you upload is resized on this device and stored here, never sent anywhere.</p>
+        <div class="logo-setup">
+          <div>
+            <div class="logo-stage" id="logoStage">
+              <span class="slot" id="logoPreviewSlot">
+                <img id="logoPreviewImg" alt="" class="hidden">
+                <svg class="logo" viewBox="0 0 48 48" aria-hidden="true">
+                  <rect x="3" y="11" width="42" height="28" rx="3" fill="none" stroke="#F4EEE1" stroke-width="2.6"/>
+                  <path d="M3 19h42" stroke="#F4EEE1" stroke-width="2.2"/>
+                  <circle cx="24" cy="30" r="6.5" fill="none" stroke="#E8552F" stroke-width="2.6"/>
+                  <path d="M24 30v-4M24 30l3 2" stroke="#E8552F" stroke-width="2.2" stroke-linecap="round"/>
+                  <circle cx="9.5" cy="15" r="1.7" fill="#E8552F"/>
+                </svg>
+              </span>
+              <span class="txt">
+                <b id="logoPreviewName">River City Youth Program</b>
+                <span>Group sign-in terminal</span>
+              </span>
+            </div>
+            <div class="logo-fixture"><i></i><span id="logoFixture">How it sits on the kiosk header</span></div>
+          </div>
+          <div>
+            <div class="logo-drop" id="logoDrop">
+              <b>Drop a logo here</b>
+              <p class="hint" style="margin:.4rem 0 .7rem">PNG · JPG · SVG · WEBP — square mark or wide wordmark</p>
+              <input type="file" id="logoFile" accept="image/png,image/jpeg,image/webp,image/svg+xml,.png,.jpg,.jpeg,.webp,.svg" class="hidden">
+              <div class="row tight" style="justify-content:center">
+                <button class="btn-c ghost" id="logoFileBtn" type="button">Choose file</button>
+                <button class="btn-c danger" id="logoRemoveBtn" type="button">Use Emerge You logo</button>
+              </div>
+            </div>
+            <label class="f" for="setLogoSize">Logo size</label>
+            <select class="f" id="setLogoSize">
+              <option value="sm">Small — 34px</option>
+              <option value="md">Medium — 46px</option>
+              <option value="lg">Large — 62px</option>
+            </select>
+            <label class="f" for="setLogoPlate">Backing plate</label>
+            <select class="f" id="setLogoPlate">
+              <option value="no">None — logo sits straight on the dark header</option>
+              <option value="yes">Light plate — for dark or busy logos</option>
+            </select>
+            <label class="f" for="setLogoName">Program name beside the logo</label>
+            <select class="f" id="setLogoName">
+              <option value="yes">Show it</option>
+              <option value="no">Hide it — wordmark carries the name</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid2">
+        <div class="panel">
+          <h2>Kiosk</h2>
+          <label class="f" for="setOrg">Program name</label>
+          <input class="f" id="setOrg">
+          <label class="f" for="setKioskId">Kiosk label (appears on exports)</label>
+          <input class="f" id="setKioskId" placeholder="Front desk / Room 2">
+          <label class="f" for="setReset">Seconds on the "signed in" screen</label>
+          <input type="number" class="f" id="setReset" min="3" max="30" step="1">
+          <label class="f" for="setIdle">Seconds before an abandoned search clears itself</label>
+          <input type="number" class="f" id="setIdle" min="5" max="120" step="1">
+          <label class="f" for="setUnattended">Seconds before an unattended screen returns to the start</label>
+          <input type="number" class="f" id="setUnattended" min="15" max="600" step="5">
+          <label class="f" for="setFullNames">Show full names in the kiosk search list</label>
+          <select class="f" id="setFullNames">
+            <option value="no">No — first name + last initial (recommended)</option>
+            <option value="yes">Yes — show the full name I typed</option>
+          </select>
+          <label class="f" for="setAllowNew">Allow youth to add themselves if they're not listed</label>
+          <select class="f" id="setAllowNew">
+            <option value="yes">Yes — flagged for coach review</option>
+            <option value="no">No — they must ask a coach</option>
+          </select>
+          <div class="row" style="margin-top:1.1rem"><button class="btn-c accent" id="saveSettings" type="button">Save kiosk settings</button></div>
+        </div>
+
+        <div>
+          <div class="panel">
+            <h2>Coach PIN</h2>
+            <p class="hint" id="pinState"></p>
+            <label class="f" for="setPinNew">New 4-digit PIN</label>
+            <input class="f" id="setPinNew" inputmode="numeric" maxlength="4" placeholder="••••">
+            <label class="f" for="setPinConfirm">Confirm PIN</label>
+            <input class="f" id="setPinConfirm" inputmode="numeric" maxlength="4" placeholder="••••">
+            <div class="row" style="margin-top:1rem"><button class="btn-c accent" id="savePin" type="button">Change PIN</button></div>
+          </div>
+
+          <div class="panel">
+            <h2>Data on this device</h2>
+            <p class="hint" id="dataNote"></p>
+            <div class="row">
+              <button class="btn-c danger" id="clearRecords" type="button">Delete all sign-in records</button>
+              <button class="btn-c danger" id="factoryReset" type="button">Reset everything</button>
+            </div>
+            <p class="hint" style="margin-top:.9rem">Sign-in records are stored only in this browser. Export the workbook before clearing the browser data, switching tablets, or changing devices.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<!-- ============================================================
+     COACH REQUEST (kiosk, private)
+     ============================================================ -->
+<div class="overlay" id="reqOverlay" role="dialog" aria-modal="true" aria-labelledby="reqTitle">
+  <div class="reqbox">
+    <div id="reqForm">
+      <span class="eyebrow">Private request</span>
+      <h2 id="reqTitle">Ask to see a coach</h2>
+      <p class="sub">A coach gets told you're here. Nobody at this screen sees that you asked, and you don't need to be signed in to a group.</p>
+
+      <div class="req-sec">
+        <label class="f" style="margin-top:0">What's going on? Pick anything that fits.</label>
+        <div class="chips" id="reasonChips"></div>
+      </div>
+
+      <div class="req-sec">
+        <label class="f" style="margin-top:0">How soon?</label>
+        <div class="urg" id="urgPick">
+          <button type="button" data-urg="now" aria-pressed="false"><b>Need someone now</b><span>A coach should come right away</span></button>
+          <button type="button" data-urg="soon" aria-pressed="true"><b>When a coach is free</b><span>No rush — sometime today</span></button>
+        </div>
+      </div>
+
+      <div class="req-sec">
+        <label class="f" for="reqNote">Anything you want the coach to know? Optional.</label>
+        <textarea class="f" id="reqNote" placeholder="Short note — a coach reads this before coming over."></textarea>
+        <label class="f" for="reqWho">Who would you like to see?</label>
+        <select class="f" id="reqWho"><option value="">Any available coach</option></select>
+      </div>
+
+      <div class="stage-actions" style="margin-top:1.2rem">
+        <button class="btn btn-primary btn-big" id="reqSend" type="button">Send request</button>
+        <button class="btn" id="reqCancel" type="button">Cancel</button>
+      </div>
+      <p class="privacy" style="margin-top:1rem">
+        <b>What happens next.</b> Coaches on the alert list are emailed right away and this request shows up
+        on the coach console and in the weekly export for case management.
+      </p>
+    </div>
+
+    <div class="req-sent" id="reqSent">
+      <h2 class="big">A coach has been told.</h2>
+      <p id="reqSentWhere">Someone will come find you.</p>
+      <p id="reqSentStatus"></p>
+      <p class="who" id="reqSentRef"></p>
+      <div class="done-row" style="justify-content:center">
+        <button class="btn-done" id="reqDone" type="button">Done</button>
+      </div>
+      <div class="countdown" style="justify-content:center">
+        <span id="reqCdLabel">Returning to start in 10s</span>
+        <span class="cd-bar"><i id="reqCdBar"></i></span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toasts" id="toasts" aria-live="polite"></div>
+<!--SPLIT-->
+<script src="assets/js/config.js"></script>
+<script src="assets/js/kiosk.js"></script>
+</body>
+</html>
